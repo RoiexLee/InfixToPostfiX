@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name="InfixToPostfix",
-    version="1.0.7",
+    version="1.0.8",
     author="RoiexLee",
     author_email="luoyixaun1029@gmail.com",
     description="A python module converts infix expressions to postfix expressions and includes a visual interface.",
