@@ -10,7 +10,7 @@ setup(
     long_description=open("README.md").read(),
     url="https://github.com/RoiexLee/InfixToPostfiX",
     packages=find_packages(),
-    python_requires=">=3.0",
+    python_requires=">=3.11.0",
     install_requires=open("requirements.txt").read().split("\n"),
     include_package_data=True
 )
