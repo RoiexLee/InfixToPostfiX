@@ -25,7 +25,7 @@ class InfixToPostfix:
         self.non_ters = self.non_ters()
         self.ters = self.ters()
         self.ops = self.ops()
-        self.first_vts, self.follow_vts = self.first_and_follow_vts()
+        self.first_vts, self.follow_vts = self.first_and_last_vts()
         self.priority_table = self.priority_table()
 
     def fixed(self):
@@ -47,32 +47,32 @@ class InfixToPostfix:
     def ops(self):
         return [ter for ter in self.ters if ter != "v"]
 
-    def first_and_follow_vts(self):
+    def first_and_last_vts(self):
         """
-        生成 first_vts 和 follow_vts
+        生成 first_vts 和 last_vts
         """
 
-        def first_or_follow_vt(non_ter, finished, vt_dict, pattern):
-            if non_ter not in finished:
+        def first_or_last_vt(non_ter, waited, vt_dict, pattern):
+            if non_ter not in waited:
+                waited.add(non_ter)
                 for candidate in self.grammar_fixed[non_ter]:
                     tmp = candidate[0] if pattern == "first" else candidate[-1]
                     if tmp in self.ters:
                         vt_dict[non_ter].add(tmp)
                     elif tmp in self.non_ters:
-                        if tmp != non_ter:
-                            first_or_follow_vt(tmp, finished, vt_dict, pattern)
+                        if tmp not in waited:
+                            first_or_last_vt(tmp, waited, vt_dict, pattern)
                             vt_dict[non_ter].update(vt_dict[tmp])
                         if (pattern == "first") and (len(candidate) > 1) and (candidate[1] in self.ters):
-                            vt_dict[non_ter].update({candidate[1]})
-                        elif (pattern == "follow") and (len(candidate) > 1) and (candidate[-2] in self.ters):
-                            vt_dict[non_ter].update({candidate[-2]})
-                finished.add(non_ter)
+                            vt_dict[non_ter].add(candidate[1])
+                        elif (pattern == "last") and (len(candidate) > 1) and (candidate[-2] in self.ters):
+                            vt_dict[non_ter].add(candidate[-2])
 
-        first_vts, follow_vts = {non_ter: set() for non_ter in self.non_ters}, {non_ter: set() for non_ter in self.non_ters}
+        first_vts, last_vts = {non_ter: set() for non_ter in self.non_ters}, {non_ter: set() for non_ter in self.non_ters}
         for non_ter in self.non_ters:
-            first_or_follow_vt(non_ter, set(), first_vts, "first")
-            first_or_follow_vt(non_ter, set(), follow_vts, "follow")
-        return first_vts, follow_vts
+            first_or_last_vt(non_ter, set(), first_vts, "first")
+            first_or_last_vt(non_ter, set(), last_vts, "last")
+        return first_vts, last_vts
 
     def priority_table(self):
         """
@@ -131,26 +131,26 @@ class InfixToPostfix:
                     index = end
             return expression_split
 
-        stack = [("#", ["#"])]
-        words = split(expression)
-        words.append(("#", "#"))
-        actions, states = ["init stack"], ["stack = #"]
+        actions, stack, words, stack_states = ["init stack"], [("#", ["#"])], split(expression) + [("#", "#")], ["#"]
+        words_states = ["".join([word[1] for word in words])]
 
-        for word in words:
-            i = len(stack) - 1 if stack[len(stack) - 1][0] in self.ters else len(stack) - 2
+        i = 0
+        while i < len(words):
+            word = words[i]
+            j = len(stack) - 1 if stack[len(stack) - 1][0] in self.ters else len(stack) - 2
             while True:
-                priority = self.priority_table[stack[i][0]][word[0]]
+                priority = self.priority_table[stack[j][0]][word[0]]
                 if (priority == "<") or (priority == "="):
                     break
                 elif priority == ">":
                     while True:
-                        right = stack[i][0]
-                        i = i - 1 if stack[i - 1][0] in self.ters else i - 2
-                        left = stack[i][0]
+                        right = stack[j][0]
+                        j = j - 1 if stack[j - 1][0] in self.ters else j - 2
+                        left = stack[j][0]
                         if self.priority_table[left][right] == "<":
                             break
                     # 规约并翻译
-                    tmp = stack[i + 1:]
+                    tmp = stack[j + 1:]
                     if (tmp[0][0] == "Z") and (tmp[1][0] in self.ops) and (tmp[2][0] == "Z"):
                         a = ("Z", [*tmp[0][1], *tmp[2][1], tmp[1][1]])
                     elif (tmp[0][0] == "(") and (tmp[1][0] == "Z") and (tmp[2][0] == ")"):
@@ -159,13 +159,16 @@ class InfixToPostfix:
                         a = ("Z", [tmp[0][1]])
                     else:
                         actions.append("无法规约")
-                        return words, actions, states, None
-                    stack = stack[:i + 1] + [a]
-                    actions.append(f"{''.join([ele[0] for ele in tmp])} -> Z, Z.code = {' '.join(a[1])}")
-                    states.append(f"stack = {''.join([ele[0] for ele in stack])}")
-            priority = self.priority_table[stack[i][0]][word[0]]
+                        return words, actions, stack_states, None
+                    stack = stack[:j + 1] + [a]
+                    actions.append(f"{stack[j][0]} > {word[0]}, {''.join([ele[0] for ele in tmp])} -> Z, Z.code = {' '.join(a[1])}")
+                    stack_states.append(f"{''.join([ele[0] for ele in stack])}")
+                    words_states.append("".join([word[1] for word in words[i:]]))
+            priority = self.priority_table[stack[j][0]][word[0]]
             if (priority == "<") or (priority == "="):
                 stack.append(word)
-                actions.append(f"stack append {word[0]}")
-                states.append(f"stack = {''.join([ele[0] for ele in stack])}")
-        return words[:-1], actions, states, stack[1][1]
+                actions.append(f"{stack[j][0]} <= {word[0]}, stack append {word[1]}")
+                stack_states.append(f"{''.join([ele[0] for ele in stack])}")
+                words_states.append("".join([word[1] for word in words[i + 1:]]))
+            i += 1
+        return stack[1][1], words[:-1], actions, stack_states, words_states

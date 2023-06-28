@@ -42,3 +42,5 @@ sys.exit(app.exec())
 ![visual_interface_1.png](https://github.com/RoiexLee/InfixToPostfix/blob/main/resource/visual_interface_1.png?raw=true)
 
 ![visual_interface_2.png](https://github.com/RoiexLee/InfixToPostfix/blob/main/resource/visual_interface_2.png?raw=true)
+
+![visual_interface_3.png](https://github.com/RoiexLee/InfixToPostfix/blob/main/resource/visual_interface_3.png?raw=true)
