@@ -22,8 +22,8 @@ from InfixToPostfix.infix_to_postfix import InfixToPostfix
 
 infix_to_postfix = InfixToPostfix()
 expression = "a+b-(12.3*cde/(10%2^3))"
-words, actions, states, result = infix_to_postfix.analyze(expression)
-print(words, actions, states, result, sep="\n")
+result, words, actions, stack_states, words_states = infix_to_postfix.analyze(expression)
+print(result, words, actions, stack_states, words_states, sep="\n")
 ```
 
 ### With visual interface
