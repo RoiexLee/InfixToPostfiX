@@ -1,16 +1,17 @@
 # InfixToPostfix
 
-A python module converts infix expressions to postfix expressions and includes a visual interface.
+A python module converts infix expressions to postfix expressions and includes a visual interface
 
 ## Table of Contents
 
 - [Install](#install)
 - [Usage](#usage)
+- [License](#license)
 
 ## Install
 
-```sh
-pip install InfixToPostfix
+```shell
+$ pip install InfixToPostfix
 ```
 
 ## Usage
@@ -39,8 +40,12 @@ window = MainWindow()
 sys.exit(app.exec())
 ```
 
-![visual_interface_1.png](https://github.com/RoiexLee/InfixToPostfix/blob/main/resource/visual_interface_1.png?raw=true)
+![visual_interface_1.png](./resource/visual_interface_1.png)
 
-![visual_interface_2.png](https://github.com/RoiexLee/InfixToPostfix/blob/main/resource/visual_interface_2.png?raw=true)
+![visual_interface_2.png](./resource/visual_interface_2.png)
 
-![visual_interface_3.png](https://github.com/RoiexLee/InfixToPostfix/blob/main/resource/visual_interface_3.png?raw=true)
+![visual_interface_3.png](./resource/visual_interface_3.png)
+
+## License
+
+[GPL-3.0](./LICENSE) © [RoiexLee](http://roiexlee.github.io) 
